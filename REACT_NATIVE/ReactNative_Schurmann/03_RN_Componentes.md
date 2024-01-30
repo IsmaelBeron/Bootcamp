@@ -325,4 +325,164 @@ export default App
 ## SectionList
 
 - SectionList me permite separar el contenido mediante algún orden lógico (cómo el orden alfabético)
-- 
+- Debe recibir **en las props sections un arreglo con las propiedades title y data dentro de un objeto, data con un arreglo con la data a mostrar**
+- Hay que añadir también **la función renderItem** de la que desestructuramos **item** para renderizar el componente con la data y **renderSectionHeader** de la que desestructuramos **section** para renderizar la sección y le pasamos title
+
+~~~js
+import { StyleSheet, Text, View, SectionList} from "react-native"
+
+const App = ()=>{
+
+return (
+ <View style={styles.container}>
+ <SectionList sections={[
+  {title: "Grupo1", 
+  data: [
+   {key:'1', nombre: "Miguel"},
+   {key:'2', nombre:"Pepe"},
+   {key:'3', nombre:"María"},
+ ]},
+ {title: "Grupo2",
+  data:[
+  {key:'4', nombre:"Lucas"},
+  {key:'5', nombre:"Petra"},
+  {key:'6', nombre:"Juana"}
+  ]}
+]} 
+renderItem={({item})=> <Text style={styles.item} >{item.nombre}</Text>}
+renderSectionHeader={({section})=><Text style={styles.section} >{section.title}</Text>}
+/>
+
+</View>
+)}
+
+const styles = StyleSheet.create({
+  container:{
+    flex:1,
+    backgroundColor: '#fff',
+    alignItems:'stretch',
+    justifyContent:'center',
+    paddingTop: 22 //para alejarlo un poco de arriba
+  },
+  item:{
+    padding: 10,
+    fontSize: 22,
+    height: 50,
+    width: '100%',
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1
+  },
+  section:{
+    fontSize: 16,
+    fontWeight: 'bold',
+    backgroundColor: '#ccc',
+    paddingTop:2,
+    paddingLeft: 10,
+    paddingBottom: 2,
+  }
+});
+
+export default App
+~~~
+-----
+
+## Obtener datos de una API
+
+- Usaremos una FlatList para el ejemplo
+- Usaremos useState y useEffect para tarernos los datos
+- Usaremos https://jsonplaceholder.typicode.com/users para imprimir los users
+- Uso **Paste JSON as Code** para crear la interfaz y tipar el state para que no de problemas
+- Hago un fetch en el useEffect para renderizar los nombres de los usuarios
+- Como no dispongo de una key, puedo usar **keyExtractor**. Desestructuro el id de User
+- KeyExtractor **necesita un string**, no un number como está tipado el id, por lo que lo convierto
+
+~~~js
+import { StyleSheet, Text, View, FlatList} from "react-native"
+import { useState, useEffect } from "react";
+
+export interface User {
+  id:       number;
+  name:     string;
+  username: string;
+  email:    string;
+  address:  Address;
+  phone:    string;
+  website:  string;
+  company:  Company;
+}
+
+export interface Address {
+  street:  string;
+  suite:   string;
+  city:    string;
+  zipcode: string;
+  geo:     Geo;
+}
+
+export interface Geo {
+  lat: string;
+  lng: string;
+}
+
+export interface Company {
+  name:        string;
+  catchPhrase: string;
+  bs:          string;
+}
+
+const App = ()=>{
+
+const [users,setUsers] = useState<User[]>([])
+const [loading, setLoading] = useState(true) //le doy el valor de true para asegurarme de que apenas cargue la app estará en loading
+
+useEffect(() => {
+  fetch('https://jsonplaceholder.typicode.com/users')
+        .then(response=> response.json()) //transformo los datos que obtengo en un json
+        .then(data=>{
+          setUsers(data) //le paso la data al estado
+          setLoading(false)
+        })
+}, [])
+
+
+if(loading){
+  <View style={styles.center}>
+    <Text>Cargando..</Text>
+  </View>
+}
+return (
+ <View style={styles.container}>
+  <FlatList 
+  data={users}
+  renderItem={({item})=> <Text>{item.name}</Text>}
+  keyExtractor={({id})=>String(id)}
+  />
+
+</View>
+)}
+
+const styles = StyleSheet.create({
+  container:{
+    flex:1,
+    backgroundColor: '#fff',
+    alignItems:'stretch',
+    justifyContent:'center',
+    paddingTop: 22 //para alejarlo un poco de arriba
+  },
+  item:{
+    padding: 10,
+    fontSize: 22,
+    height: 50,
+    width: '100%',
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1
+  },
+  center:{
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+});
+
+export default App
+~~~
