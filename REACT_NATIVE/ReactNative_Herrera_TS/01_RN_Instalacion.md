@@ -42,7 +42,7 @@ pause
 
 - Ahora con win+R puedo ingresar el comando gpedit.msc para acceder a las directivas de grupo
 - Ir a Configuración de Equipo /Plantillas Administrativas/Sistema/...
-- Hay que encontrar **activar seguridad basada en virtualización**, pero con desactivar la integridad de la memoria del núcle en Segudirdad de Windows, Seguridad del dispositivo la instalación de HAMX funcionó
+- Hay que encontrar **activar seguridad basada en virtualización**, pero **con desactivar la integridad de la memoria del núcleo en Seguridad de Windows, Seguridad del dispositivo la instalación de HAMX funcionó**
 -------
 
 - En el SDK Manager instalo la imagen de Android 11 (es con la que va a trabajar el curso)

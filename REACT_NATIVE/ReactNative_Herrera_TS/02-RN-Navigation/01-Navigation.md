@@ -14,7 +14,7 @@
   - **BottomTab Navigation**
   - **MaterialTop Navigation**
 - **El stack no existe**, hay que crearlo.
-- Instalar **@react-navigation/native** y **react-native-safe-area-contextreact-native-screens** (windows)
+- Instalar **@react-navigation/native** y **react-native-safe-area-context react-native-screens** (windows)
 - Hay que añadir al cuerpo de la clase MainActivity en *android/app/src/main/java/nombre-del-paquete/MainActivity.java* lo siguiente
 - **Shortcut** en VSCODE: Ctrl +P y el nombre del archivo MainActivity.java
 - Añadir **import android.os.Bundle**
