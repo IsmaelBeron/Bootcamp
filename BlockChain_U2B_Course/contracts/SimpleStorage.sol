@@ -1,5 +1,3 @@
-
-
 //SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
@@ -25,6 +23,10 @@ contract SimpleStorage{
   function getPeople() external view returns(People[] memory){
     return people;
 }
+
+    function store(uint256 _favoriteNum) public {
+        favoriteNum = _favoriteNum;
+    }
 
 
 

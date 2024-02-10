@@ -1,5 +1,5 @@
-const simpleStorage = artifacts.require("SimpleStorage")
+const storageFactory = artifacts.require("StorageFactory")
 
 module.exports = function(deployer){
-    deployer.deploy(simpleStorage)
+    deployer.deploy(storageFactory)
 }
