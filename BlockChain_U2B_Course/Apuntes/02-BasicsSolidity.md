@@ -168,17 +168,3 @@ contract SimpleStorage{
 }
 ~~~
 ----
-
-## Deploying First Contract
-
-- En lugar de usar la rede de test London de JS, seleccionar Inject Web3 para conectar con Metamask
-- Si está confiogurado Ganache y Truffle seleccionar Ganache como red y escribir en consola **ganache** para que escuche el puerto
-- Para hacerlo desde VSCODE **usar truffle compile y truffle deploy con Ganache corriendo**
-  - Entro en la consola de truffle con truffle console
-  - hay que guardar la blockchain en una variable, usa el nombre del archivo.deployed() 
-
->  storage = await SimpleStorage.deployed()
-  
-- Con esta variable puedo disparar las funciones publicas del contrato
-
-> storage.funcion(params)

@@ -25,7 +25,7 @@ module.exports ={
     networks:{
         host:"127.0.0.1",
         port:"7545",
-        network_id:"5777"
+        network_id:"*"
     },
     compilers:{
         solc:{
@@ -41,25 +41,39 @@ module.exports ={
 - Contrato de prueba
 
 ~~~solidity
+
+
 //SPDX-License-Identifier: MIT
-pragma solidity 0.8.19; //versión de compilación, ^0.8.20 significa la versión de aqui en adelante
-                        // puedo usar >=0.8.7 < 0.9.0 para especificar un rango
+pragma solidity 0.8.19;
 
 contract SimpleStorage{
     //Types: boolean, uint (siempre positivo), int (positivo o negativo), address, string, bytes
 
-    bool hasFavoriteNumber = true;
-    uint favoriteNumber = 123; //uint puede tenr varios bits (uint256 es el máximo, si no se especifica es 256)
-    int256 otherNumber = -123;
-    //string text= "text"  
-    address myAddress = 0xD17aAEb79f47BcaE3af596c23C3C9f14Ef29fcd9
+    uint256 favoriteNum;
 
-    // Si no inicializo una variable numñerica, su valor por defecto es 0
-    uint256 number; // number = 0
+    struct People {
+    string name;
+    uint256 favoriteNum;
+    }
+
+    mapping(string=>uint256) public nameToFavoriteNum;
+
+    People[] public people;      //Puedo especificar el num de elementos con People[n]  
 
 
-    bytes32 favoriteBytes= "more bytes!";
+    function retrieve() public view returns(uint256){
+        return favoriteNum;
+  }
+  
+  function getPeople() external view returns(People[] memory){
+    return people;
+}
 
+
+    function addPerson(string memory _name, uint256 _favoriteNum) public{
+        people.push(People(_name, _favoriteNum)); //no necesita memory
+        nameToFavoriteNum[_name] = _favoriteNum; //asigno números al nombre dado en un mapping
+    }  
 }
 ~~~
 
@@ -97,8 +111,8 @@ module.exports ={
 - Para acceder a la blockchain debemos crear una variable entrando en la consola de truffle usando **el nombre del contratro con .deployed()**
 
 > truffle console
->  storage = await SimpleStorage.deployed()
+> storage = await SimpleStorage.deployed()
   
 - Con esta variable puedo disparar las funciones publicas del contrato
 
-> storage.funcion(params)
+> storage.nombreFuncion(params)
