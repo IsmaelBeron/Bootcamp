@@ -1,5 +1,6 @@
-const storageFactory = artifacts.require("StorageFactory")
+const fundMe = artifacts.require("FundMe")
 
 module.exports = function(deployer){
-    deployer.deploy(storageFactory)
+    deployer.deploy(fundMe)
 }
+

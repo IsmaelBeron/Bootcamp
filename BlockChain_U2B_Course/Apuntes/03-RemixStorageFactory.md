@@ -130,4 +130,52 @@ contract StorageFactory{
  function sfStore(uint256 _simpleStorageIndex, uint256 _simpleStorageNumber) public{
        simpleStorageArray[_simpleStorageIndex].store(_simpleStorageNumber);
 }
+
+  function sfGet(uint256 _simpleStorageIndex)public view returns(uint256){
+        return simpleStorageArray[_simpleStorageIndex].retrieve();
+    }
 ~~~
+-----
+
+## Inheritance and Overrides
+
+- Para sobreescribir el método store en otro smart contract podemos usar la herencia
+- ExtraStorage.sol
+
+~~~solidity
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import "./SimpleStorage.sol";
+
+contract ExtraStorage is SimpleStorage{
+
+}
+~~~
+
+- Para hacer una función sobreescribible hay que añadirle la palabra virtual en la función del padre
+
+~~~solidity
+ function store(uint256 _favoriteNum) public virtual{
+        favoriteNum = _favoriteNum;
+    }
+~~~
+
+- En la función que sobreescribe debo añadir override
+
+~~~solidity
+//SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+import "./SimpleStorage.sol";
+
+contract ExtraStorage is SimpleStorage{
+
+    function store(uint256 _favoriteNum) public override{
+        favoriteNum = _favoriteNum + 5;
+    }
+}
+~~~
+----
+
+
