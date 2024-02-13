@@ -1,2 +1,0 @@
-# REACT NATIVE - CONTEXT
-
