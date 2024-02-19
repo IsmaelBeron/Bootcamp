@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import './PriceConverter.sol';
+error notOwner();
 
 contract FundMe{
 
@@ -13,10 +14,10 @@ contract FundMe{
 
     mapping(address => uint256) public addressToAmountFounded;
 
-    address public owner;
+    address public immutable i_owner;
     
     constructor(){
-        owner = msg.sender;    
+        i_owner = msg.sender;    
     }
 
     function fund() public payable{
@@ -48,7 +49,17 @@ contract FundMe{
 
     modifier onlyOwner {
     _;
-    require(msg.sender ==owner, "Sender is not the owner");
-    
+    //require(msg.sender ==i_owner, "Sender is not the owner");
+    if(msg.sender != i_owner){
+        revert notOwner();
+    }    
 }
+
+    receive() external payable{
+        fund();
+    }
+
+    fallback() external payable{
+        fund();
+    }
 }

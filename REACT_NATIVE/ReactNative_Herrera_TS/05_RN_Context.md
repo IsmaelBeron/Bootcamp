@@ -260,3 +260,83 @@ export const ContactsScreen = () => {
     )
 }
 ~~~
+
+- Quiero que al tocar un icono lo guarde como favorito y lo muestre en otra pantalla como mi icono favorito
+
+~~~js
+import React, { useContext } from 'react';
+import { TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { colores } from '../theme/appTheme';
+import { AuthContext } from '../context/AuthContext';
+
+interface Props {
+    iconName: string
+}
+
+
+export const TouchableIcon = ({ iconName }: Props ) => {
+
+    const { changeFavoriteIcon } = useContext( AuthContext );
+
+    return (
+        <TouchableOpacity
+            onPress={ () => changeFavoriteIcon( iconName ) }
+        >
+            <Icon 
+                name={ iconName }
+                size={ 80 } 
+                color={ colores.primary } />
+        </TouchableOpacity>
+    )
+}
+~~~
+
+- Uso el componente en la pantalla con iconos
+- Ya no necesito pasarle name, size, solo iconName
+- En favoriteIcon del estado global debería guardar el icono que yo hice clic y mostrarlo en otra pantalla
+
+~~~js
+import React, { useEffect } from 'react'
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import { Text, View } from 'react-native'
+import { styles, colores } from '../theme/appTheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TouchableIcon } from '../components/TouchableIcon';
+
+
+export const Tab1Screen = () => {
+
+    const { top } = useSafeAreaInsets();
+
+    useEffect(() => {
+        console.log('Tab1Screen effect');
+    }, [])
+
+    return (
+        <View style={{ 
+            ...styles.globalMargin,
+            marginTop: top + 10
+        }}
+        >
+            <Text style={ styles.title }> Iconos </Text>
+
+            <Text>
+                <TouchableIcon iconName="airplane-outline" />
+                <TouchableIcon iconName="attach-outline" />
+                <TouchableIcon iconName="bonfire-outline" />
+                <TouchableIcon iconName="calculator-outline" />
+                <TouchableIcon iconName="chatbubble-ellipses-outline" />
+                <TouchableIcon iconName="images-outline" />
+                <TouchableIcon iconName="leaf-outline" />
+            </Text>
+
+        </View>
+    )
+}
+~~~
+
+## Cambiar el icono favorito - AuthState
+
+-  

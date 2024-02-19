@@ -23,7 +23,7 @@ contract FundMe{
 
     address public owner;
 
-    Y//CONSTRUCTOR!!!!    
+    //CONSTRUCTOR!!!!    
     constructor(){
         owner = msg.sender;    
     }
