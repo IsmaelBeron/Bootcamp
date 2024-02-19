@@ -178,4 +178,78 @@ export class Server {
 
 ## CheckService - UseCase
 
+- Los casos de uso los colocaremos en la capa de dominio (src/**domain**/**use-cases**)
+- Dentro de use-cases voy a ir creando diferemtes carpetas según el caso de uso, checks, logs, etc
+- Creo un método **async** al que le paso la url de mi web (por ejemplo, para chequear que funciona) y devuelve una promesa con un valor booleano
+- Si la web no estuviera operativa me gustaría enviar un email o crear un log, notificar de alguna manera, al menos después de 5 intentos (por ejemplo)
+- Esto es **un caso de uso**, un código dedicado a una tarea en específico
+- Siempre es bueno crear interfaces para determinar cierto comportamiento y ayudar a comprender el código a otras personas
+- No hago el código estático porque si voy a hacer inyección de dependencias
+- Uso un **try catch**
+
+~~~js
+interface CheckServiceUseCase{
+    execute(url: string):Promise <boolean>
+}
+
+export class CheckService implements CheckServiceUseCase{
+    
+    
+    async execute(url: string): Promise <boolean>{
+
+        try {
+            const req = await fetch(url) 
+            
+            if(!req.ok){
+                throw new Error(`Error on check service ${url}`)
+            }   
+            
+            console.log(`${url} is ok!`)
+            return true
+        
+        } catch (error) {
+            console.log(`${error}`)
+            
+            return false
+        }
+
+    }
+}
+~~~
+
+- Ahora llamo este caso de uso en el server
+
+~~~js
+import { CheckService } from "../domain/use-cases/checks/check-service";
+import { CronService } from "./cron/cron-service";
+
+
+export class Server {
+
+    public static start(){
+        CronService.createJob('*/5 * * * * *', ()=>{
+            
+            new CheckService().execute('https://google.com')
+        })
+    }
+}
+~~~ 
+
+- **Resumen**:
+  - Creamos el **Server** en la capa de presentación
+  - Creamos el **CronService** para realizar **el patrón adaptador** con la librería cron
+    - **Defino los tipos de los argumentos** del método estático
+    - **Pongo en marcha el servicio** de cron dentro del método con una nueva instancia pasándole los argumentos como parámetros y llamando a **.start**
+    - **Retorno el job** por si quiero hacer algo con el cómo usar .stop
+  - Creo el primer **caso de uso en la capa de dominio, CheckService**
+    - Implemento una **interfaz** con el único método execute al que le paso una url
+    - No lo hago estático porque quiero inyectarlo
+    - En un **try catch hago el fetch** de la url pasada
+    - Si el fetch no me devuelve el ok en la request mando **un error**. **Devuelvo un true**  
+    - Si el catch pilla un error, lo imprimo
+    - Llamo al método **generando una nueva instancia del CheckService pasándole la url** al método **execute**
+-----
+
+## JSON-Server
+
 - 
