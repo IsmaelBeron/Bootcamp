@@ -1,4 +1,4 @@
-# NODE - NOC
+# NODE_TS - NOC
 
 - Instalaciones necesarias (sin nodemon)
 
@@ -252,4 +252,112 @@ export class Server {
 
 ## JSON-Server
 
-- 
+- Para testear el servicio y montar un server REST API usaremos JSON Server
+- Creo una nueva carpeta, hago el npm init -y 
+
+> npm i json-server
+
+- Creo el db.json y copio el contenido de la web de ejemplo
+- Para levantar el server creo el script
+
+~~~json
+"start": "json-server --watch db.json"
+~~~
+
+- Cambio la url del servicio (caso de uso) CheckService
+
+~~~js
+export class Server {
+
+    public static start(){
+        CronService.createJob('*/5 * * * * *', ()=>{
+            
+            new CheckService().execute('http://localhost:3000')
+        })
+    }
+}
+~~~
+------
+
+## Inyección de dependencias
+
+- La inyección de dependencias es colocar una dependencia en los casos de uso, repositorios, data sources, etc
+- Se suele realizar en un **constructor**
+- Tipo los casos de si sale bien y si hay un error
+- Voy a recibir estos dos argumentos en el constructor del CheckService
+- Uso **private readonly** porque yo no quiero cambiar el SuccessCallback accidentalmente
+- LLamo a las funciones en sus lugares correspondientes 
+
+~~~js
+interface CheckServiceUseCase{
+    execute(url: string):Promise <boolean>
+}
+
+type SuccessCallback = ()=> void  //tipo de lo que quiero ejecutar si todo sale bien
+type ErrorCallback = (error: string)=> void //tipo si hay algún error
+
+export class CheckService implements CheckServiceUseCase{
+
+    constructor(
+        private readonly successCallback: SuccessCallback,
+        private readonly errorCallback: ErrorCallback
+        ){}
+    
+    
+    async execute(url: string): Promise <boolean>{
+
+        try {
+            const req = await fetch(url) 
+            
+            if(!req.ok){
+                throw new Error(`Error on check service ${url}`)
+            }   
+            
+            this.successCallback() //llamo al SuccessCallback
+           
+            
+            return true
+        
+        } catch (error) {
+            
+            this.errorCallback(`${error}`) //llamo al ErrorCallback
+            
+            return false
+        }
+
+    }
+}
+~~~
+
+- Ahora solo tengo que pasarle las funciones al crear la instancia de CheckService
+
+~~~js
+import { CheckService } from "../domain/use-cases/checks/check-service";
+import { CronService } from "./cron/cron-service";
+
+
+export class Server {
+
+    public static start(){
+        CronService.createJob('*/5 * * * * *', ()=>{
+            
+            new CheckService(
+                ()=> console.log("Success!"),
+                (error)=> console.log(`${error}`)
+            ).execute('http://localhost:3000')
+        })
+    }
+}
+~~~
+
+- El objetivo de todo esto es separar responsabilidades
+-------
+
+## Cierre de sección
+
+- Los logs en consola son útiles pero si tuvieramos varios servicios generaría mucho ruido y tampoco es conveniente
+- El caso de uso debería recibir **dónde es que quiero grabar estos logs**
+- Vamos a usar una de las funciones (SuccessCallback o ErrorCallback) para grabar en la DB con un sistema personalizado de logs mediante inyección de dependencias
+------
+
+

@@ -118,11 +118,12 @@ export default function HomeScreen () {
 
 ## FlatList
 
+- Voy a crear una lista que me sirva de menú para navegar a otras pantallas
 - Necesita la **data** que renderizar, la función para renderizar el elemento (**renderItem**) y el key (**keyExtractor**)
 - Se autocierra (no tiene children)
-- renderItem **siempre devuelve un elemento JSX**
+- **renderItem** **siempre devuelve un elemento JSX**
 - Para la función de renderItem creo una **interfaz**, porque me interesa definir como luce un MenuItem
-- Puedo **desestructurar el item y el index de renderItem**
+- Puedo **desestructurar el item y el index de renderItem**. Aquí solo desestructuro el item
 - Del key de keyExtractor recibo directamente el item, **tiene que ser un string!**
 
 ~~~js
@@ -166,4 +167,358 @@ export default function HomeScreen () {
 }
 ~~~
 
-- 
+- Entonces, necesito la **data**, la función de **renderItem** que debe retornar un JSX y el **keyExtractor** que debe de ser un string
+- Creo una nueva carpeta llamada theme en src/
+- Creo appTheme con una StyleSheet y la importo
+
+~~~js
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+      title:{
+        fontSize: 35,
+        fontWeight: 'bold'
+      }
+});
+~~~
+
+- Añado el estilo al texto "Opciones de menú"
+
+~~~js
+import {Text, View} from 'react-native'
+import React  from 'react'
+import { FlatList } from 'react-native-gesture-handler'
+import { styles } from '../theme/appTheme'
+
+interface MenuItem{
+    name: string,
+    icon: string,
+    components: string
+}
+
+const menuItems: MenuItem[]=[
+    {name: 'Animation 101', icon: 'cube-outline', components: 'Animation101Screen'},
+]
+
+
+
+export default function HomeScreen () {
+
+    const renderMenuItem = (menuItem: MenuItem)=>{
+        return (
+            <View>
+                <Text>{menuItem.name} - {menuItem.icon}</Text>
+            </View>
+        )
+    }
+
+    return (
+        <View style={{flex: 1}}>
+
+            <Text style={styles.title} >Opciones de Menú</Text>
+       
+       <FlatList 
+        data={menuItems}
+        renderItem={({item})=>renderMenuItem(item)}
+        keyExtractor={(item)=> item.name}
+       />
+
+        </View>
+    ) 
+}
+~~~
+
+- Pero de esta manera cuando hago scroll el Texto no se va para arriba y además choca con el notch de ios
+- Este texto puede ser parte del menú
+- Creo una función que retorne el texto. Lo meto dentro de un View porque me ayudará con el CSS (separaciones, sombras, etc)
+- Ahora puedo llamar a la función con la propiedad **ListHeaderComponent**. Necesita una función que regrese un JSX
+- Incluso tengo para personalizar el estilo con **ListHeaderComponentStyle**
+- Uso **useSafeAreaInsets** para desestructurar el **top** y añadirle 20 para que el header no moleste con el notch
+- Le añado también un **marginBottom**
+- Lo coloco en el style del View que devuelve renderListHeader
+
+~~~js
+import {Text, View} from 'react-native'
+import React  from 'react'
+import { FlatList } from 'react-native-gesture-handler'
+import { styles } from '../theme/appTheme'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+interface MenuItem{
+    name: string,
+    icon: string,
+    components: string
+}
+
+const menuItems: MenuItem[]=[
+    {name: 'Animation 101', icon: 'cube-outline', components: 'Animation101Screen'},
+]
+
+
+
+export default function HomeScreen () {
+
+    const {top} = useSafeAreaInsets()
+
+    const renderMenuItem = (menuItem: MenuItem)=>{
+        return (
+            <View>
+                <Text>{menuItem.name} - {menuItem.icon}</Text>
+            </View>
+        )
+    }
+
+    const renderListHeader =()=>{
+        return(
+            <View style={{marginTop: top+20, marginBottom: 20}}>
+                <Text style={styles.title} >Opciones de Menú</Text>
+            </View>
+        )
+    }
+
+    return (
+        <View style={{flex: 1}}>
+       
+       <FlatList 
+        data={menuItems}
+        renderItem={({item})=>renderMenuItem(item)}
+        keyExtractor={(item)=> item.name}
+        ListHeaderComponent={()=>renderListHeader()}
+       />
+
+        </View>
+    )
+}
+~~~
+
+- Tampoco quiero que todo quede pegado a los bordes, creo la propiedad globalMargin en appTheme
+
+~~~js
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+  globalMargin:{
+    marginHorizontal: 20
+  },
+      title:{
+        fontSize: 35,
+        fontWeight: 'bold'
+      }
+});
+~~~
+
+- Uso el spread de styles para usar solo globalMargin
+
+~~~js
+return (
+    <View style={{flex: 1, ...styles.globalMargin}}>
+    
+    <FlatList 
+    data={menuItems}
+    renderItem={({item})=>renderMenuItem(item)}
+    keyExtractor={(item)=> item.name}
+    ListHeaderComponent={()=>renderListHeader()}
+    />
+
+    </View>
+)
+~~~
+
+- Coloco otro icono. recuerda que los nombres deben ser diferentes para el keyExtractor
+
+~~~js
+const menuItems: MenuItem[]=[
+    {name: 'Animation 101', icon: 'cube-outline', components: 'Animation101Screen'},
+    {name: 'Animation 102', icon: 'albums-outline', components: 'Animation102Screen'},
+]
+~~~
+
+- Para crear separación entre los componentes tengo **ItemSeparatorComponent**
+- Devuelve un JSX, solo aparece entre los items ( ni al principio ni al final)
+
+~~~js
+return (
+    <View style={{flex: 1, ...styles.globalMargin}}>
+    
+    <FlatList 
+    data={menuItems}
+    renderItem={({item})=>renderMenuItem(item)}
+    keyExtractor={(item)=> item.name}
+    ListHeaderComponent={()=>renderListHeader()}
+    ItemSeparatorComponent={()=> <Text>_________________</Text>}
+    />
+
+    </View>
+)
+~~~
+
+- Puedo crear una función para el ItemSeparatorComponent
+- Cuando **no hay ningún argumento puedo mandar solo la declaración de la función**
+
+~~~js
+import {Text, View} from 'react-native'
+import React  from 'react'
+import { FlatList } from 'react-native-gesture-handler'
+import { styles } from '../theme/appTheme'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+interface MenuItem{
+    name: string,
+    icon: string,
+    components: string
+}
+
+const menuItems: MenuItem[]=[
+    {name: 'Animation 101', icon: 'cube-outline', components: 'Animation101Screen'},
+    {name: 'Animation 102', icon: 'albums-outline', components: 'Animation102Screen'},
+]
+
+
+
+export default function HomeScreen () {
+
+    const {top} = useSafeAreaInsets()
+
+    const renderMenuItem = (menuItem: MenuItem)=>{
+        return (
+            <View>
+                <Text>{menuItem.name} - {menuItem.icon}</Text>
+            </View>
+        )
+    }
+
+    const renderListHeader =()=>{
+        return(
+            <View style={{marginTop: top+20}}>
+                <Text style={styles.title} >Opciones de Menú</Text>
+            </View>
+        )
+    }
+
+    const itemSeparatror = ()=>{
+        return(
+            <View 
+            style={{borderBottomWidth: 1,
+                opacity: 0.4,
+                marginVertical: 8
+                }}
+            />
+        )
+    }
+
+    return (
+        <View style={{flex: 1, ...styles.globalMargin}}>
+       
+       <FlatList 
+        data={menuItems}
+        renderItem={({item})=>renderMenuItem(item)}
+        keyExtractor={(item)=> item.name}
+        ListHeaderComponent={renderListHeader}
+        ItemSeparatorComponent={itemSeparatror}
+       />
+
+        </View>
+    ) 
+}
+~~~
+
+- No hay ningún **FlatListItem**, hay que crearlo
+- Vamos a crear un componente pra reutilizar llamado FlatListMenuItems
+- Necesito la interfaz en el componente, la corto y la coloco en la carpeta src/interfaces
+- La importo en HomeScreen
+- Creo una interfaz **Props** en FlatListMenuItem
+
+~~~js
+import React from 'react'
+import { Text, View } from 'react-native'
+import { MenuItem } from '../interfaces/appInterfaces'
+
+interface Props{
+    menuItem: MenuItem
+}
+
+const FlatListMenuItem = ({menuItem}: Props) => {
+    return (
+        <View>
+            <Text>{menuItem.name} - {menuItem.icon}</Text>
+        </View>
+    )
+}
+
+export default FlatListMenuItem
+~~~
+
+- En HomeScreen ya no tengo la función de **renderItem**, le paso el componente directamente
+
+~~~js
+return (
+    <View style={{flex: 1, ...styles.globalMargin}}>
+    
+    <FlatList 
+    data={menuItems}
+    renderItem={({item})=><FlatListMenuItem menuItem={item} />}
+    keyExtractor={(item)=> item.name}
+    ListHeaderComponent={renderListHeader}
+    ItemSeparatorComponent={itemSeparatror}
+    />
+
+    </View>
+)
+~~~
+
+- Puedo aplicar los estilos al FlatListMenuItem de manera local
+- Quiero poner el icono, el texto y una flechita para indicar que lleva a esa página
+- Uso Icon de IonIcons
+- Cambio la dirección de flex a row (por defecto está en column)
+- Coloco una separación en el texto y aumento la fuente
+- La flecha es otro icono, lo coloco en duro
+- Para que se coloque al final puedo usar **otro View y colocarle flex:1**. Como está en row se estira todo lo que puede hasta el final
+- **Puedo crear un spacer con un flex de 1 (se suele hacer, es lo mismo)**
+
+~~~js
+import React from 'react'
+import { Text, View } from 'react-native'
+import { MenuItem } from '../interfaces/appInterfaces'
+import { StyleSheet } from 'react-native'
+import  Icon  from 'react-native-vector-icons/Ionicons'
+
+interface Props{
+    menuItem: MenuItem
+}
+
+const FlatListMenuItem = ({menuItem}: Props) => {
+    return (
+        <View style={styles.container} >
+            <Icon
+            name={menuItem.icon}
+            color="gray"
+            size={23}
+            />
+            <Text style={styles.itemText}>
+                {menuItem.name}
+                </Text>
+            
+            <View style={{flex:1}} />
+            <Icon
+            name="chevron-forward-outline"
+            color="gray"
+            size={23}
+            />
+            
+           
+        </View>
+    )
+}
+
+const styles = StyleSheet.create({
+      container:{
+        flexDirection: 'row'
+      },
+      itemText:{
+        marginLeft: 10,
+        fontSize: 19
+      }
+});
+
+export default FlatListMenuItem
+~~~
