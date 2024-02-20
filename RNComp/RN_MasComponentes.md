@@ -129,7 +129,7 @@ export default function HomeScreen () {
 ~~~js
 import {Text, View} from 'react-native'
 import React  from 'react'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native'
 
 interface MenuItem{
     name: string,
@@ -187,7 +187,7 @@ export const styles = StyleSheet.create({
 ~~~js
 import {Text, View} from 'react-native'
 import React  from 'react'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native'
 import { styles } from '../theme/appTheme'
 
 interface MenuItem{
@@ -240,7 +240,7 @@ export default function HomeScreen () {
 ~~~js
 import {Text, View} from 'react-native'
 import React  from 'react'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native'
 import { styles } from '../theme/appTheme'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -358,7 +358,7 @@ return (
 ~~~js
 import {Text, View} from 'react-native'
 import React  from 'react'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native'
 import { styles } from '../theme/appTheme'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -474,10 +474,10 @@ return (
 - La flecha es otro icono, lo coloco en duro
 - Para que se coloque al final puedo usar **otro View y colocarle flex:1**. Como está en row se estira todo lo que puede hasta el final
 - **Puedo crear un spacer con un flex de 1 (se suele hacer, es lo mismo)**
-
+- Para hacer los MenuItems clicables lo enmarcamos en un **TouchableOpacity**
 ~~~js
 import React from 'react'
-import { Text, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
 import { MenuItem } from '../interfaces/appInterfaces'
 import { StyleSheet } from 'react-native'
 import  Icon  from 'react-native-vector-icons/Ionicons'
@@ -488,6 +488,7 @@ interface Props{
 
 const FlatListMenuItem = ({menuItem}: Props) => {
     return (
+        <TouchableOpacity>
         <View style={styles.container} >
             <Icon
             name={menuItem.icon}
@@ -507,6 +508,7 @@ const FlatListMenuItem = ({menuItem}: Props) => {
             
            
         </View>
+        </TouchableOpacity>
     )
 }
 
@@ -522,3 +524,4 @@ const styles = StyleSheet.create({
 
 export default FlatListMenuItem
 ~~~
+

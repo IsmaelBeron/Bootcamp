@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
 import { MenuItem } from '../interfaces/appInterfaces'
 import { StyleSheet } from 'react-native'
 import  Icon  from 'react-native-vector-icons/Ionicons'
@@ -10,6 +10,7 @@ interface Props{
 
 const FlatListMenuItem = ({menuItem}: Props) => {
     return (
+        <TouchableOpacity>
         <View style={styles.container} >
             <Icon
             name={menuItem.icon}
@@ -29,6 +30,7 @@ const FlatListMenuItem = ({menuItem}: Props) => {
             
            
         </View>
+        </TouchableOpacity>
     )
 }
 
