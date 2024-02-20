@@ -1,5 +1,7 @@
+import { RootStackParamList } from "../navigator/Navigator";
+
 export interface MenuItem{
     name: string,
     icon: string,
-    components: string
+    component: keyof RootStackParamList
 }

@@ -524,4 +524,289 @@ const styles = StyleSheet.create({
 
 export default FlatListMenuItem
 ~~~
+----
 
+## Animated API
+
+- Animaciones!
+- Creo los componentes para Animacion101 y Animacion102 en /screens
+
+~~~js
+import React from 'react'
+import { StyleSheet, View } from 'react-native'
+
+const Animacion101Screen = () => {
+  return (
+   <View style={{flex:1}} >
+    <View style={styles.purpleBox}   />
+   </View>
+  )
+}
+
+const styles = StyleSheet.create({
+      purpleBox:{
+        backgroundColor: '#5856D6',
+        width: 150,
+        height: 150
+      }
+});
+export default Animacion101Screen
+~~~
+
+- Creo una copia de este componente y lo llamo Animation102Screen
+- Debo indicarle en la navegación estos dos componentes
+
+~~~js
+import { createStackNavigator } from '@react-navigation/stack';
+import HomeScreen from '../screens/HomeScreen';
+import Animation101Screen from '../screens/Animation101Screen';
+import Animation102Screen from '../screens/Animation102Screen';
+
+const Stack = createStackNavigator();
+
+export const Navigator =()=> {
+  return (
+    <Stack.Navigator
+    screenOptions={{
+        headerShown: false
+    }}
+    >
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Animation101Screen" component={Animation101Screen} />
+      <Stack.Screen name="Animation102Screen" component={Animation102Screen} />
+    </Stack.Navigator>
+  );
+}
+~~~
+
+- En FlatListMenuItem uso useNavigation para obtener el navigation
+- **NOTA**: Hay que hacer un poco de ingenieria para tipar el menuItem.component para hacer el componente reutilizable
+- Primero creas un tipo para las rutas
+
+~~~js
+import { createStackNavigator } from '@react-navigation/stack';
+import HomeScreen from '../screens/HomeScreen';
+import Animation101Screen from '../screens/Animation101Screen';
+import Animation102Screen from '../screens/Animation102Screen';
+
+export type RootStackParamList = {
+  HomeScreen: undefined
+  Animation101Screen: undefined
+  Animation102Screen: undefined
+}
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+
+export const Navigator =()=> {
+  return (
+    <Stack.Navigator
+    screenOptions={{
+        headerShown: false
+    }}
+    >
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="Animation101Screen" component={Animation101Screen} />
+      <Stack.Screen name="Animation102Screen" component={Animation102Screen} />
+    </Stack.Navigator>
+  );
+}
+~~~
+
+- Hay que crear un nuevo tipo para el hook de navigation importando **StackNavigationProp**
+
+~~~js
+import React from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
+import { MenuItem } from '../interfaces/appInterfaces'
+import { StyleSheet } from 'react-native'
+import  Icon  from 'react-native-vector-icons/Ionicons'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from '../navigator/Navigator'
+
+interface Props{
+    menuItem: MenuItem
+}
+
+type navigationPropList = StackNavigationProp<RootStackParamList>
+
+
+const FlatListMenuItem = ({menuItem}: Props) => {
+
+    const navigation = useNavigation<navigationPropList>()
+
+    return (
+        <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={()=>navigation.navigate(menuItem.component)}
+        >
+        <View style={styles.container} >
+            <Icon
+            name={menuItem.icon}
+            color="gray"
+            size={23}
+            />
+            <Text style={styles.itemText}>
+                {menuItem.name}
+                </Text>
+            
+            <View style={{flex:1}} />
+            <Icon
+            name="chevron-forward-outline"
+            color="gray"
+            size={23}
+            />
+            
+           
+        </View>
+        </TouchableOpacity>
+    )
+}
+
+const styles = StyleSheet.create({
+      container:{
+        flexDirection: 'row'
+      },
+      itemText:{
+        marginLeft: 10,
+        fontSize: 19
+      }
+});
+
+export default FlatListMenuItem
+~~~
+
+- Por último para que no de error cambio la interfaz de MenuItem
+
+~~~js
+import { RootStackParamList } from "../navigator/Navigator";
+
+export interface MenuItem{
+    name: string,
+    icon: string,
+    component: keyof RootStackParamList
+}
+~~~
+
+- Con poner **as never** en menuItem.component también se resolvía
+- **Otra opción es**
+
+~~~js
+<TouchableOpacity
+        activeOpacity={0.8}
+        onPress={()=>navigation.dispatch(CommonActions.navigate({name: menuItem.component}))}
+        >
+~~~
+
+- **SIGAMOS!**
+- Quiero que la caja aparezca con un fade, caiga y rebote en su punto final
+- Tengo que centrar la caja, lo hago con styles.container
+- Para la animación usaremos **useRef** con **Animated**
+  - Value es para un solo valor ValueXY para dos valores.
+  - El .current es del useRef
+- En lugar de un View, para usar la animación debo usar **Animated.View**
+
+~~~js
+import React, { useRef } from 'react'
+import { StyleSheet, View, Animated } from 'react-native'
+
+const Animation101Screen = () => {
+
+  const opacity = useRef(new Animated.Value(0.4)).current
+
+
+  return (
+   <View style={styles.container} >
+    <Animated.View style={{...styles.purpleBox, opacity: opacity}}   />
+   </View>
+  )
+}
+
+const styles = StyleSheet.create({
+    container:{
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+      purpleBox:{
+        backgroundColor: '#5856D6',
+        width: 150,
+        height: 150
+      }
+});
+export default Animation101Screen
+~~~
+-------
+
+## Fade In Fade Out
+
+- **Animated.timing** es para animar algo en el tiempo. 
+- Necesita algo de tipo **Animated.Value**, como es la opacidad que creé, y un objeto de configuración
+- Me pide el **toValue**, **duration** y **UseNativeDriver**
+- Para que la animación empiece tengo que ponerle el **.start()**
+- Creo un Button para llamar al fadeIn
+
+~~~js
+import React, { useRef } from 'react'
+import { StyleSheet, View, Animated, Button } from 'react-native'
+
+const Animation101Screen = () => {
+
+  const opacity = useRef(new Animated.Value(0)).current
+
+  const fadeIn = ()=>{
+    Animated.timing(
+      opacity,
+      {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: true //activa la aceleración por hardware
+      }
+    ).start()
+  }
+  const fadeOut = ()=>{
+    Animated.timing(
+      opacity,
+      {
+        toValue: 0,
+        duration: 900,
+        useNativeDriver: true //activa la aceleración por hardware
+      }
+    ).start()
+  }
+
+
+  return (
+   <View style={styles.container} >
+    <Animated.View style={{...styles.purpleBox, opacity: opacity, marginBottom: 20}}   />
+    <Button 
+      title="FadeIn"
+      onPress={ fadeIn}
+    ></Button>
+    <Button 
+      title="FadeOut"
+      onPress={ fadeOut}
+    ></Button>
+   </View>
+  )
+}
+
+const styles = StyleSheet.create({
+    container:{
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+      purpleBox:{
+        backgroundColor: '#5856D6',
+        width: 150,
+        height: 150
+      }
+});
+export default Animation101Screen
+~~~
+
+- .start puede recibir un callback opcional que se dispará cuando la animación termine
+- Puede usarse para resetear la animación
+- 
