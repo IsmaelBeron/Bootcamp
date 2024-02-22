@@ -1,10 +1,11 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
+import DraggableView from '../components/DraggableView';
 
 const Animation102Screen = () => {
   return (
    <View style={{flex:1}} >
-    <View style={styles.purpleBox}   />
+    <DraggableView  />
    </View>
   )
 }

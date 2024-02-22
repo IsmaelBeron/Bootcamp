@@ -753,7 +753,7 @@ import { StyleSheet, View, Animated, Button } from 'react-native'
 
 const Animation101Screen = () => {
 
-  const opacity = useRef(new Animated.Value(0)).current
+  const opacity = useRef(new Animated.Value(0)).current   //uso .current porque me interesa trabajar con el valor
 
   const fadeIn = ()=>{
     Animated.timing(
@@ -809,4 +809,476 @@ export default Animation101Screen
 
 - .start puede recibir un callback opcional que se dispará cuando la animación termine
 - Puede usarse para resetear la animación
+-----
+
+## Easing Bounce
+
+- Quiero que cuando haga el Fade in el componente caiga de arriba y que rebote
+- Creo una nueva propiedad top. Le coloco -100 (como si hablara del top: -100) para que se sitúe arriba
+- Colocarlo en la propiedad CSS top **no me sirve, tengo que usar el transform e indicarle las coordenadas**
+- Para que rebote, puedo usar la animación de top usando **la propiedad easing con Easing de react-native**
+
+~~~js
+import React, { useRef } from 'react'
+import { StyleSheet, View, Animated, Button, Easing } from 'react-native'
+
+const Animation101Screen = () => {
+
+  const opacity = useRef(new Animated.Value(0)).current
+  const top = useRef(new Animated.Value(-100)).current
+
+  const fadeIn = ()=>{
+    Animated.timing(
+      opacity,
+      {
+        toValue: 1,
+        duration: 900,
+        useNativeDriver: true //activa la aceleración por hardware
+      }
+    ).start()
+
+    Animated.timing(
+      top,
+      {
+        toValue: 0,
+        duration: 900,
+        useNativeDriver: true,
+        easing: Easing.bounce
+      }
+    ).start()
+  }
+
+  const fadeOut = ()=>{
+    Animated.timing(
+      opacity,
+      {
+        toValue: 0,
+        duration: 900,
+        useNativeDriver: true //activa la aceleración por hardware
+      }
+    ).start()
+  }
+
+
+  return (
+   <View style={styles.container} >
+    <Animated.View style={{...styles.purpleBox, 
+      opacity: opacity, 
+      marginBottom: 20,
+      transform: [
+        {
+          translateY: top
+        }
+      ]}}   />
+    <Button 
+      title="FadeIn"
+      onPress={ fadeIn}
+    ></Button>
+    <Button 
+      title="FadeOut"
+      onPress={ fadeOut}
+    ></Button>
+   </View>
+  )
+}
+
+const styles = StyleSheet.create({
+    container:{
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+      purpleBox:{
+        backgroundColor: '#5856D6',
+        width: 150,
+        height: 150
+      }
+});
+export default Animation101Screen
+~~~
+----
+
+## useAnimation
+
+- Copio y pego el código de las animaciones para hacer un custom hook
+- Retorno los valores y la función
+
+~~~js
+import React, { useRef } from 'react'
+import { Animated, Easing } from 'react-native'
+
+const useAnimation = () => {
+    const opacity = useRef(new Animated.Value(0)).current
+    const top = useRef(new Animated.Value(-100)).current
+  
+    const fadeIn = ()=>{
+      Animated.timing(
+        opacity,
+        {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true //activa la aceleración por hardware
+        }
+      ).start()
+  
+      Animated.timing(
+        top,
+        {
+          toValue: 0,
+          duration: 900,
+          useNativeDriver: true,
+          easing: Easing.bounce
+        }
+      ).start()
+    }
+  
+    const fadeOut = ()=>{
+      Animated.timing(
+        opacity,
+        {
+          toValue: 0,
+          duration: 900,
+          useNativeDriver: true //activa la aceleración por hardware
+        }
+      ).start()
+    }
+  
+  
+    return {
+        opacity,
+        top,
+        fadeIn,
+        fadeOut
+    }
+}
+
+export default useAnimation
+~~~
+
+- Ahora ya puedo usar el custom hook en Animation101Screen
+
+~~~js
+const {fadeIn, fadeOut, opacity, top}= useAnimation()
+~~~
+
+- Refactorización! Cambio el nombre de la propiedad top por position
+- Creo una función que me permita jugar con la posición
+
+~~~js
+import React, { useRef } from 'react'
+import { Animated, Easing } from 'react-native'
+
+const useAnimation = () => {
+    const opacity = useRef(new Animated.Value(0)).current
+    const position = useRef(new Animated.Value(-100)).current
+  
+    const fadeIn = ()=>{
+      Animated.timing(
+        opacity,
+        {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true //activa la aceleración por hardware
+        }
+      ).start()
+    }
+  
+
+  
+    const fadeOut = ()=>{
+      Animated.timing(
+        opacity,
+        {
+          toValue: 0,
+          duration: 900,
+          useNativeDriver: true //activa la aceleración por hardware
+        }
+      ).start()
+    }
+  
+    const startMovingPosition =(initPosition: number= -100, duration: number=600 )=>{
+        position.setValue(initPosition)
+
+        Animated.timing(
+            position,
+            {
+              toValue: 0,
+              duration: 900,
+              useNativeDriver: true,
+              easing: Easing.bounce
+            }
+          ).start()
+        }
+    
+  
+    return {
+        opacity,
+        position,
+        fadeIn,
+        fadeOut,
+        startMovingPosition
+        
+    }
+}
+
+export default useAnimation
+~~~
+
+- Coloco la nueva función en el onPress
+
+~~~js
+<Button 
+      title="FadeIn"
+      onPress={ ()=>{
+        fadeIn(), 
+        startMovingPosition() }}
+    ></Button>
+~~~
+
+- Esta librería da mucho juego. **Puedes animar cualquier propiedad que sea soportada por Animated.View** (no todas!!) 
+----
+
+## Animated ValueXY
+
+- Trabajemos con ValueXY en la animación 102
+- Copio el ejemplo de la página reactnative.dev en components/DraggableView.tsx
+
+~~~js
+import React, {useRef} from 'react';
+import {Animated, PanResponder, StyleSheet, View} from 'react-native';
+
+const DraggableView = () => {
+  const pan = useRef(new Animated.ValueXY()).current;
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event([
+      null,
+      {
+        dx: pan.x, // x,y are Animated.Value
+        dy: pan.y,
+      },
+    ]),
+    onPanResponderRelease: () => {
+      Animated.spring(
+        pan, // Auto-multiplexed
+        {toValue: {x: 0, y: 0}, useNativeDriver: true}, // Back to zero
+      ).start();
+    },
+  });
+
+  return (
+    <View style={styles.container}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[pan.getLayout(), styles.box]}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  box: {
+    backgroundColor: '#61dafb',
+    width: 80,
+    height: 80,
+    borderRadius: 4,
+  },
+});
+
+export default DraggableView;
+~~~
+
+- Tengo un WARNING, me dice que requiere un segundo argumento
+- Cambiando **useNativeDriver a false** deja de rebentar pero sigue el warning
+- Me pide un segundo argumento, le paso el useNativeDriver
+
+~~~js
+import React, {useRef} from 'react';
+import {Animated, PanResponder, StyleSheet, View} from 'react-native';
+
+const DraggableView = () => {
+  const pan = useRef(new Animated.ValueXY()).current;
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderMove: Animated.event(
+    [
+      null,
+      {
+        dx: pan.x, // x,y are Animated.Value
+        dy: pan.y,
+      },
+      
+    ],
+    {useNativeDriver: false} //le paso esto como segundo argumento para eliminar el WARNING
+    ),
+    onPanResponderRelease: () => {
+      Animated.spring(
+        pan, // Auto-multiplexed
+        {toValue: {x: 0, y: 0}, useNativeDriver: false}, // Back to zero
+      ).start();
+    },
+  });
+
+  return (
+    <View style={styles.container}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[pan.getLayout(), styles.box]}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  box: {
+    backgroundColor: '#61dafb',
+    width: 80,
+    height: 80,
+    borderRadius: 4,
+  },
+});
+
+export default DraggableView;
+~~~
+-----
+
+## Componente Switch
+
+- Copio el ejemplo
+
+~~~js
+import React, {useState} from 'react';
+import {View, Switch, StyleSheet} from 'react-native';
+
+const App = () => {
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState); //obtengo el estado anterior y lo cambio al booleano opuesto
+
+  return (
+    <View style={styles.container}>
+      <Switch
+        trackColor={{false: '#767577', true: '#81b0ff'}}
+        thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+        ios_backgroundColor="#3e3e3e"
+        onValueChange={toggleSwitch}
+        value={isEnabled}
+      />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+export default App;
+~~~
+
+- Creo un nuevo Screen para este componente
+
+~~~js
+import React from 'react'
+import { View } from 'react-native-reanimated/lib/typescript/Animated'
+
+const SwitchScreen = () => {
+  return (
+    <View style={{marginTop: 100}}>
+
+    </View>
+  )
+}
+
+export default SwitchScreen
+~~~
+
+- Tengo que poder llegar a la pantalla, vamos al navigator
+- Debo añadir el componente a RootStackParamList (configuración que se hizo para tipar el navigator y no diera error con menuItem) 
+- **NOTA**: se podía evitar esta "sobreingeniería" **tipando menuItem.component as never**
+
+~~~js
+import { createStackNavigator } from '@react-navigation/stack';
+import HomeScreen from '../screens/HomeScreen';
+import Animation101Screen from '../screens/Animation101Screen';
+import Animation102Screen from '../screens/Animation102Screen';
+import SwitchScreen from '../screens/SwitchScreen';
+
+export type RootStackParamList = {
+  HomeScreen: undefined
+  Animation101Screen: undefined
+  Animation102Screen: undefined
+  SwitchScreen: undefined
+}
+
+const Stack = createStackNavigator<RootStackParamList>();
+
+
+export const Navigator =()=> {
+  return (
+    <Stack.Navigator
+    screenOptions={{
+        headerShown: false
+    }}
+    >
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="Animation101Screen" component={Animation101Screen} />
+      <Stack.Screen name="Animation102Screen" component={Animation102Screen} />
+      <Stack.Screen name="SwitchScreen" component={SwitchScreen} />
+    </Stack.Navigator>
+  );
+}
+~~~
+
+- En el HomeScreen el menuItems está creciendo, vamos a moverlo a otro directorio llamado data o menu
+
+~~~js
+import { MenuItem } from "../interfaces/appInterfaces";
+
+
+export const menuItems: MenuItem[]=[
+    {name: 'Animation 101', icon: 'cube-outline', component: 'Animation101Screen'},
+    {name: 'Animation 102', icon: 'albums-outline', component: 'Animation102Screen'},
+    {name: 'Switches', icon: 'toggle-outline', component: 'SwitchScreen'},
+
+]
+~~~
+
+- **Importo menuItems en HomeScreen**
+- Coloco el componente SwitchComponent que he copiado de la documentación en SwitchScreen
+
+~~~js
+import React from 'react'
+import { View } from 'react-native'
+import SwitchComponent from '../components/SwitchComponent'
+const SwitchScreen = () => {
+  return (
+    <View style={{marginTop: 100}}>
+      <SwitchComponent />
+    </View>
+  )
+}
+
+export default SwitchScreen
+~~~
+
+- Luego vamos a usar el switch en un caso real pero primero quiero hacer un header reutilizable que diga SWITCHES
+------
+
+## Header reutilizable
+
 - 
