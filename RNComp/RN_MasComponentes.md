@@ -1281,4 +1281,105 @@ export default SwitchScreen
 
 ## Header reutilizable
 
+- Creo el componente HeaderTitle.tsx
+- Importo el styles de appTheme y extraigo el top del SafeAreaInsets
+
+~~~js
+import React from 'react'
+import { Text, View } from 'react-native'
+import { styles } from '../theme/appTheme'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+const HeaderTitle = () => {
+    const {top} = useSafeAreaInsets()
+  return (
+    <View style={{marginTop: top+20}}>
+    <Text style={styles.title} >Opciones de Menú</Text>
+    </View>
+  )
+}
+
+export default HeaderTitle
+~~~
+
+- Coloco el componente en el header del FlatList en HomeScreen
+
+~~~js
+    return (
+        <View style={{flex: 1, ...styles.globalMargin}}>
+       
+       <FlatList 
+        data={menuItems}
+        renderItem={({item})=><FlatListMenuItem menuItem={item} />}
+        keyExtractor={(item)=> item.name}
+        ListHeaderComponent={HeaderTitle} //aquí
+        ItemSeparatorComponent={itemSeparator}
+       />
+
+        </View>
+    )
+~~~
+
+- Ahora falta definir las props que quiero customizar. Básicamente el título
+- Creo la interfaz de las props 
+
+~~~js
+import React from 'react'
+import { Text, View } from 'react-native'
+import { styles } from '../theme/appTheme'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+interface Props{
+    title: string
+}
+
+const HeaderTitle = ({title}: Props) => {
+    const {top} = useSafeAreaInsets()
+  return (
+    <View style={{marginTop: top+20}}>
+    <Text style={styles.title} >{title}</Text>
+    </View>
+  )
+}
+
+export default HeaderTitle
+~~~
+
+- Ahora puedo usar el componente y pasarle un título
+
+~~~js
+<FlatList 
+  data={menuItems}
+  renderItem={({item})=><FlatListMenuItem menuItem={item} />}
+  keyExtractor={(item)=> item.name}
+  ListHeaderComponent={()=> <HeaderTitle title="Opciones de Menú" />}
+  ItemSeparatorComponent={itemSeparator}
+  />
+~~~
+
+- Puedo usarlo en SwitchScreen también
+
+~~~js
+import React from 'react'
+import { View } from 'react-native'
+import SwitchComponent from '../components/SwitchComponent'
+import HeaderTitle from '../components/HeaderTitle'
+const SwitchScreen = () => {
+  return (
+    <View style={{marginHorizontal: 20}}>
+      <HeaderTitle title="Switches" />
+      <SwitchComponent />
+    </View>
+  )
+}
+
+export default SwitchScreen
+~~~
+
+- Vamos a trabajar con la reutilización del switch
+-------
+
+## CustomSwitch
+
+- Necesito una función que me indique cuando cambia el switch
 - 

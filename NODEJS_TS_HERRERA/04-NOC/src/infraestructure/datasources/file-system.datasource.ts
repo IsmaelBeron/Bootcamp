@@ -32,18 +32,18 @@ export class FileSystemDatasource implements LogDataSource{
         })
     }
 
-    saveLog(newLog: LogEntity): Promise<void> {
+   async saveLog(newLog: LogEntity): Promise<void> {
 
         const logAsJson = `${JSON.stringify(newLog)}\n`
         fs.appendFileSync(this.allLogsPath, logAsJson)
 
-        if(newLog.level === LogSeverityLevel.low) return Promise.resolve()
+        if(newLog.level === LogSeverityLevel.low) return
         if(newLog.level === LogSeverityLevel.medium){
             fs.appendFileSync(this.mediumLogsPath, logAsJson)
         }else{
             fs.appendFileSync(this.highLogsPath, logAsJson)            
         }
-        return Promise.resolve()
+        return
     }
     
 
@@ -53,20 +53,20 @@ export class FileSystemDatasource implements LogDataSource{
 
         return logs
    }
-    getLogs(severityLevel: LogSeverityLevel): Promise<LogEntity[]> {
+   async getLogs(severityLevel: LogSeverityLevel): Promise<LogEntity[]> {
        
         switch (severityLevel) {
             case LogSeverityLevel.low:
                 
-            return Promise.resolve(this.getLogsFromFile(this.allLogsPath))
+            return this.getLogsFromFile(this.allLogsPath)
                 
             case LogSeverityLevel.medium:
                 
-            return Promise.resolve(this.getLogsFromFile(this.mediumLogsPath))
+            return this.getLogsFromFile(this.mediumLogsPath)
 
             case LogSeverityLevel.high:
             
-            return Promise.resolve(this.getLogsFromFile(this.highLogsPath))
+            return this.getLogsFromFile(this.highLogsPath)
                     
             default:
 

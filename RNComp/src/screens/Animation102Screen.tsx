@@ -1,10 +1,12 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import DraggableView from '../components/DraggableView';
+import HeaderTitle from '../components/HeaderTitle';
 
 const Animation102Screen = () => {
   return (
    <View style={{flex:1}} >
+    <HeaderTitle title="Animación102" />
     <DraggableView  />
    </View>
   )

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import { StyleSheet, View, Animated, Button, Easing } from 'react-native'
 import useAnimation from '../hooks/useAnimation'
+import HeaderTitle from '../components/HeaderTitle'
 
 const Animation101Screen = () => {
 
@@ -8,6 +9,7 @@ const Animation101Screen = () => {
 
   return (
    <View style={styles.container} >
+    <HeaderTitle title="Animation101" />
     <Animated.View style={{...styles.purpleBox, 
       opacity: opacity, 
       marginBottom: 20,

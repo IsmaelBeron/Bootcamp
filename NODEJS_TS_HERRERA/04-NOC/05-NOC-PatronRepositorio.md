@@ -291,7 +291,11 @@ static fromJson = (json: string): LogEntity =>{
 }
 ~~~
 
-- En JS cuando tenemos el mismo argumento como mismo parámetro de la función lo podemos dejar así
+- Para barrer el archivo por lineas desde getLogsFromFile, podemos usar el split y pasarle la separación (\n)
+- Luego usar un map para que convierta cada elemento en una entidad **con el método estático formJson**
+- **En JS cuando tenemos el mismo argumento como mismo parámetro de la función se puede poner solo la declaración de la función (sin paréntesis)**
+- No necesito hacer una nueva instancia ya que es un método estático 
+  - Es decir, en lugar de **.map(arg=> LogEntity.fromJson(arg)) se puede escribir .map(LogEntity.fromJson)**
 
 ~~~js
 import { LogDataSource } from "../../domain/datasources/log.datasource";
@@ -328,18 +332,18 @@ export class FileSystemDatasource implements LogDataSource{
         })
     }
 
-    saveLog(newLog: LogEntity): Promise<void> {
+    async saveLog(newLog: LogEntity): Promise<void> {
 
         const logAsJson = `${JSON.stringify(newLog)}\n`
         fs.appendFileSync(this.allLogsPath, logAsJson)
 
-        if(newLog.level === LogSeverityLevel.low) return Promise.resolve()
+        if(newLog.level === LogSeverityLevel.low) return 
         if(newLog.level === LogSeverityLevel.medium){
             fs.appendFileSync(this.mediumLogsPath, logAsJson)
         }else{
             fs.appendFileSync(this.highLogsPath, logAsJson)            
         }
-        return Promise.resolve()
+        return 
     }
     
 
@@ -349,7 +353,8 @@ export class FileSystemDatasource implements LogDataSource{
 
         return logs
    }
-    getLogs(severityLevel: LogSeverityLevel): Promise<LogEntity[]> {
+   
+   async getLogs(severityLevel: LogSeverityLevel): Promise<LogEntity[]> {
        
         switch (severityLevel) {
             case LogSeverityLevel.low:
@@ -373,5 +378,4 @@ export class FileSystemDatasource implements LogDataSource{
 }
 ~~~
 
-- Para barrer el archivo por lineas desde getLogsFromFile, podemos usar el split y pasarle la separación (\n)
 - 
